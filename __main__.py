@@ -16,15 +16,17 @@
 #                   Output: 8 options
 #
 # History:          2016-03-09 - JJ     Creation of the file
-#                   2016-03-08 - JJ     Added Board class
-#
+#                   2016-03-10 - JJ     Added Board class
+#                   2016-03-14 - JJ     Added further calculation, no recursion
+#                   2016-03-15 - JJ     Added tests + assignment
 ################################################################################
 
 ################################################################################
 # Imports
 ################################################################################
 from argparse import ArgumentParser
-import random
+import copy
+import datetime
 
 ################################################################################
 # Definitions
@@ -150,16 +152,6 @@ class Bishop(Piece):
         self._d = True
         self._range = 'inf'
 
-class Pawn(Piece):
-
-    def __init__(self):
-        super(Pawn, self).__init__()
-        self._type = 'Pawn'
-        self._h = True
-        self._v = True
-        self._d = False
-        self._range = 'inf'
-
 class Board(object):
 
     def __init__(self, width, height):
@@ -168,17 +160,19 @@ class Board(object):
         self._grid = self._set_grid()
 
     def _set_grid(self):
+        """ Creates a matrix with spaces """
         grid = [[' ' for w in range(self.width)] for h in range(self.height)]
         return grid
 
-    def _print_grid(self):
+    def _print_grid(self, char=None):
+        """ Prints the grid to console """
         for hcol in range(self.width*2+1):
             print '-',
         print ''
         for row in range(self.height):
             print '|',
             for col in range(self.width):
-                print self.grid[row][col], '|',
+                print self.grid[row][col].replace('x', char), '|',
             print ''
             for hcol in range(self.width*2+1):
                 print '-',
@@ -226,7 +220,7 @@ class Board(object):
                 return False
         return True
 
-    def set_pieces(self, kings, queens, bishops, rooks, knights, pawns):
+    def set_pieces(self, kings, queens, bishops, rooks, knights):
         pieces = []
         solutions = []
         for q in range(queens):
@@ -239,10 +233,6 @@ class Board(object):
             pieces.append(Bishop())
         for n in range(knights):
             pieces.append(Knight())
-        for p in range(pawns):
-            pieces.append(Pawn())
-
-        #bla = self.get_solutions(pieces)
 
         solutions = self.put_pieces(pieces)
         if solutions is not None:
@@ -250,72 +240,117 @@ class Board(object):
                 print 'Solution '+str(index+1)
                 self.print_solution(sol)
 
-    def get_solutions(self, pieces, row=None):
-        if row is None:
-            row = []
-        solutions = []
-        print "Pieces", pieces
-        print "Row", row
-        for index, piece in enumerate(pieces):
-            print 'Putting', piece
-            # print 'row', row
-            options = self.ble(piece, row)
-
-            for option in options:
-                row.append([piece,option])
-                print 'Trying option', option
-                if len(pieces) > 0:
-                    self.get_solutions(pieces[1:], row)
-                break
-            #     print piece, option
-
-                row.append([piece,option])
-            #     print row
-            # if len(pieces)-1 == index:
-            #     print 'END OF THE LINE~!'
-            #     row = []
-            break
         return solutions
 
     def ble(self, piece, placedpieces=None):
         self._grid = self._set_grid()
-        print "placedpieces", placedpieces
         if placedpieces:
             for item in placedpieces:
-                self.set_piece_on_grid(item[0], item[1])
+                if item[1] is not None:
+                    self.set_piece_on_grid(item[0], item[1])
         options = self.get_options(piece)
 
         return options
 
+    def get_pos(self, pieces, positions, index):
+        piece = pieces[index]
+        options = self.get_options(piece)
+        for option in options:
+            positions[index][1] = option
+            for i in range(p, len(pieces)):
+                positions[i][1] = None
+                if len(pieces) > i+1:
+                    pass# repeat
+                else:
+                    if self.check_duplicate(pls, positions) is False:
+                        pls.append(copy.deepcopy(positions))
+        return True
+
     def put_pieces(self, pieces):
         pls = []
-        print 'pieces', pieces
+        positions = []
+        for p in pieces:
+            positions.append([p, None])
+        #print positions
 
-        piecea = pieces[0]
-        options = self.get_options(piecea)
-        for optiona in options:
-            #print '-piecea', piecea, optiona
+        """
+        piece = pieces[p]
+        options = self.get_options(piece)
+        for option in options:
+            positions[p][1] = option
+            for i in range(p, len(pieces)):
+                positions[i][1] = None
+            if len(pieces) > i+1:
+                # repeat
+            else:
+                if self.check_duplicate(pls, positions) is False:
+                    pls.append(copy.deepcopy(positions))
 
-            self._grid = self._set_grid()
-            self.set_piece_on_grid(piecea, optiona)
+        """
+        piece = pieces[0]
+        options = self.ble(piece, positions)
+        for option in options:
+            positions[0][1] = option
+            for i in range(1, len(pieces)):
+                positions[i][1] = None
 
-            pieceb = pieces[1]
-            optionsb = self.get_options(pieceb)
-            for optionb in optionsb:
-             #   print '--pieceb', pieceb, optionb
-                self._grid = self._set_grid()
-                self.set_piece_on_grid(piecea, optiona)
-                self.set_piece_on_grid(pieceb, optionb)
+            piece = pieces[1]
+            options = self.ble(piece, positions)
+            for option in options:
+                positions[1][1] = option
+                for i in range(2, len(pieces)):
+                    positions[i][1] = None
 
-                piecec = pieces[2]
-                optionsc = self.get_options(piecec)
-                for optionc in optionsc:
-              #      print '---piecec', piecec, optionc
-                    prow = [[piecea, optiona], [pieceb, optionb], [piecec, optionc]]
+                if len(pieces) > 2:
+                    piece = pieces[2]
+                    options = self.ble(piece, positions)
+                    for option in options:
+                        positions[2][1] = option
 
-                    if self.check_duplicate(pls, prow) is False:
-              #         print 'Appending', prow
-                        pls.append(prow)
+                        if len(pieces) > 3:
+
+                            piece = pieces[3]
+                            options = self.ble(piece, positions)
+                            for option in options:
+                                positions[3][1] = option
+
+                                if len(pieces) > 4:
+
+                                    piece = pieces[4]
+                                    options = self.ble(piece, positions)
+                                    for option in options:
+                                        positions[4][1] = option
+
+                                        if len(pieces) > 5:
+                                            piece = pieces[5]
+                                            options = self.ble(piece, positions)
+                                            for option in options:
+                                                positions[5][1] = option
+
+                                                if len(pieces) > 6:
+                                                    piece = pieces[6]
+                                                    options = self.ble(piece, positions)
+                                                    for option in options:
+                                                        positions[6][1] = option
+
+                                                        if self.check_duplicate(pls, positions) is False:
+                                                            pls.append(copy.deepcopy(positions))
+                                                            # print self.print_solution(positions)
+                                                else: # > 6
+                                                    if self.check_duplicate(pls, positions) is False:
+                                                        pls.append(copy.deepcopy(positions))
+                                        else: # > 5
+                                            if self.check_duplicate(pls, positions) is False:
+                                                pls.append(copy.deepcopy(positions))
+                                else: # > 4
+                                    if self.check_duplicate(pls, positions) is False:
+                                        pls.append(copy.deepcopy(positions))
+                        else: # > 3
+                            if self.check_duplicate(pls, positions) is False:
+                                pls.append(copy.deepcopy(positions))
+                else: # > 2
+                    if self.check_duplicate(pls, positions) is False:
+                        pls.append(copy.deepcopy(positions))
 
 
         print 'Found '+str(len(pls))+' solutions!'
@@ -327,7 +362,7 @@ class Board(object):
         self._grid = self._set_grid()
         for item in solution:
             self.set_piece_on_grid(item[0], item[1])
-        self._print_grid()
+        self._print_grid(' ')
 
     def check_duplicate(self, solutions, newsolution):
         """ Check if the new solution already exists in the solutions """
@@ -374,8 +409,6 @@ if __name__ == "__main__":
     help="Number of rooks")
     parser.add_argument("-n", "--knights", dest="knights", default=0, type=int,
     help="Number of knights")
-    parser.add_argument("-p", "--pawns", dest="pawns", default=0, type=int,
-    help="Number of pawns")
     args = parser.parse_args()
 
     if sum([args.kings, args.queens, args.bishops, args.rooks, args.knights]) == 0:
@@ -392,7 +425,30 @@ if __name__ == "__main__":
         print '- Bishops ' + str(args.bishops)
         print '- Rooks ' + str(args.rooks)
         print '- Knights ' + str(args.knights)
-        print '- Pawns ' + str(args.pawns)
 
     board = Board(args.width, args.height)
-    board.set_pieces(args.kings, args.queens, args.bishops, args.rooks, args.knights, args.pawns)
+    print 'Start', datetime.datetime.now()
+    solutions = board.set_pieces(args.kings, args.queens, args.bishops, args.rooks, args.knights)
+    print 'End', datetime.datetime.now()
+
+    """ Test 1 """
+    # board = Board(3, 3)
+    # print 'Start', datetime.datetime.now()
+    # solutions = board.set_pieces(2, 0, 0, 1, 0)
+    # print 'End', datetime.datetime.now()
+    # if len(solutions) == 4:
+    #     print 'Test succeeded!'
+
+    """ Test 2 """
+    # board = Board(4, 4)
+    # print 'Start', datetime.datetime.now()
+    # solutions = board.set_pieces(0, 0, 0, 2, 4)
+    # print 'End', datetime.datetime.now()
+    # if len(solutions) == 8:
+    #     print 'Test succeeded!'
+
+    # """ Assignment """
+    # board = Board(7, 7)
+    # print 'Start', datetime.datetime.now()
+    # board.set_pieces(2, 2, 2, 0, 1)
+    # print 'Start', datetime.datetime.now()
