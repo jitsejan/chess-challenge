@@ -1,4 +1,4 @@
-
+""" chess/__main__.py """
 ################################################################################
 # Application:      Chess
 # File:             __main__.py
@@ -19,7 +19,7 @@
 #                   2016-03-10 - JJ     Added Board class
 #                   2016-03-14 - JJ     Added further calculation, no recursion
 #                   2016-03-15 - JJ     Added tests + assignment
-################################################################################
+#                   2016-03-16 - JJ     Added recursion + pylint fixes
 
 ################################################################################
 # Imports
@@ -98,9 +98,6 @@ class Piece(object):
                         x = xpos-i
                         if y >= 0 and y < height and x >= 0 and x < width:
                             fp.append([x,y])
-
-        # print self._type+' Footprint on '+str(xpos)+', '+str(ypos)+' '+str(fp)
-
         return fp
 
 class Queen(Piece):
@@ -158,6 +155,8 @@ class Board(object):
         self._width = width
         self._height = height
         self._grid = self._set_grid()
+        self._pieces = None
+        self._solutions = []
 
     def _set_grid(self):
         """ Creates a matrix with spaces """
@@ -186,15 +185,28 @@ class Board(object):
 
     @property
     def width(self):
+        """ Return width of the board """
         return self._width
 
     @property
     def height(self):
+        """ Return height of the board """
         return self._height
 
     @property
     def grid(self):
+        """ Return grid of the board """
         return self._grid
+
+    @property
+    def pieces(self):
+        """ Return pieces of the board """
+        return self._pieces
+
+    @property
+    def solutions(self):
+        """ Return solutions of the board """
+        return self._solutions
 
     def set_piece_on_grid(self, piece, option):
         """ Puts the piece on the grid and allocates the space around it """
@@ -210,7 +222,7 @@ class Board(object):
             for col in range(self.width):
                 piece._footprint = piece._get_footprint(row, col, self.width, self.height)
                 if self.grid[row][col] == ' ' and self.isspace(piece):
-                    options.append([col,row])
+                    options.append([col, row])
         return options
 
     def isspace(self, piece):
@@ -221,8 +233,8 @@ class Board(object):
         return True
 
     def set_pieces(self, kings, queens, bishops, rooks, knights):
+        """ Set pieces of the board """
         pieces = []
-        solutions = []
         for q in range(queens):
             pieces.append(Queen())
         for k in range(kings):
@@ -234,15 +246,15 @@ class Board(object):
         for n in range(knights):
             pieces.append(Knight())
 
-        solutions = self.put_pieces(pieces)
-        if solutions is not None:
-            for index, sol in enumerate(solutions):
+        self._pieces = pieces
+        self.put_pieces()
+        if self.solutions is not None:
+            for index, sol in enumerate(self.solutions):
                 print 'Solution '+str(index+1)
                 self.print_solution(sol)
 
-        return solutions
-
     def ble(self, piece, placedpieces=None):
+        """ Ble """
         self._grid = self._set_grid()
         if placedpieces:
             for item in placedpieces:
@@ -252,109 +264,33 @@ class Board(object):
 
         return options
 
-    def get_pos(self, pieces, positions, index):
-        piece = pieces[index]
-        options = self.get_options(piece)
+    def get_pos(self, positions, index=0):
+        """ Get postion """
+        piece = self.pieces[index]
+        options = self.ble(piece, positions)
+
         for option in options:
             positions[index][1] = option
-            for i in range(p, len(pieces)):
-                positions[i][1] = None
-                if len(pieces) > i+1:
-                    pass# repeat
-                else:
-                    if self.check_duplicate(pls, positions) is False:
-                        pls.append(copy.deepcopy(positions))
+            if len(self.pieces) > index+1:
+                for i in range(index+1, len(self.pieces)):
+                    positions[i][1] = None
+                self.get_pos(positions, index+1)
+            else:
+                if self.check_duplicate(positions) is False:
+                    self._solutions.append(copy.deepcopy(positions))
         return True
 
-    def put_pieces(self, pieces):
+    def put_pieces(self):
+        """ Put pieces """
         pls = []
         positions = []
-        for p in pieces:
+        for p in self.pieces:
             positions.append([p, None])
-        #print positions
 
-        """
-        piece = pieces[p]
-        options = self.get_options(piece)
-        for option in options:
-            positions[p][1] = option
-            for i in range(p, len(pieces)):
-                positions[i][1] = None
-            if len(pieces) > i+1:
-                # repeat
-            else:
-                if self.check_duplicate(pls, positions) is False:
-                    pls.append(copy.deepcopy(positions))
-
-        """
-        piece = pieces[0]
-        options = self.ble(piece, positions)
-        for option in options:
-            positions[0][1] = option
-            for i in range(1, len(pieces)):
-                positions[i][1] = None
-
-            piece = pieces[1]
-            options = self.ble(piece, positions)
-            for option in options:
-                positions[1][1] = option
-                for i in range(2, len(pieces)):
-                    positions[i][1] = None
-
-                if len(pieces) > 2:
-                    piece = pieces[2]
-                    options = self.ble(piece, positions)
-                    for option in options:
-                        positions[2][1] = option
-
-                        if len(pieces) > 3:
-
-                            piece = pieces[3]
-                            options = self.ble(piece, positions)
-                            for option in options:
-                                positions[3][1] = option
-
-                                if len(pieces) > 4:
-
-                                    piece = pieces[4]
-                                    options = self.ble(piece, positions)
-                                    for option in options:
-                                        positions[4][1] = option
-
-                                        if len(pieces) > 5:
-                                            piece = pieces[5]
-                                            options = self.ble(piece, positions)
-                                            for option in options:
-                                                positions[5][1] = option
-
-                                                if len(pieces) > 6:
-                                                    piece = pieces[6]
-                                                    options = self.ble(piece, positions)
-                                                    for option in options:
-                                                        positions[6][1] = option
-
-                                                        if self.check_duplicate(pls, positions) is False:
-                                                            pls.append(copy.deepcopy(positions))
-                                                            # print self.print_solution(positions)
-                                                else: # > 6
-                                                    if self.check_duplicate(pls, positions) is False:
-                                                        pls.append(copy.deepcopy(positions))
-                                        else: # > 5
-                                            if self.check_duplicate(pls, positions) is False:
-                                                pls.append(copy.deepcopy(positions))
-                                else: # > 4
-                                    if self.check_duplicate(pls, positions) is False:
-                                        pls.append(copy.deepcopy(positions))
-                        else: # > 3
-                            if self.check_duplicate(pls, positions) is False:
-                                pls.append(copy.deepcopy(positions))
-                else: # > 2
-                    if self.check_duplicate(pls, positions) is False:
-                        pls.append(copy.deepcopy(positions))
-
-
-        print 'Found '+str(len(pls))+' solutions!'
-
+        self.get_pos(positions)
+        print len(self.solutions)
+        for solution in self.solutions:
+            self.print_solution(solution)
         return pls
 
     def print_solution(self, solution):
@@ -364,19 +300,20 @@ class Board(object):
             self.set_piece_on_grid(item[0], item[1])
         self._print_grid(' ')
 
-    def check_duplicate(self, solutions, newsolution):
+    def check_duplicate(self, newsolution):
         """ Check if the new solution already exists in the solutions """
-        for solution in solutions:
-            result = []
-            for item in newsolution:
-                positions = self.get_positions_for_item(solution, item[0])
-                if item[1] in positions:
-                    result.append(True)
-                else:
-                    result.append(False)
-            if all(val is True for val in result):
-                # Duplicate found. All positions match
-                return True
+        if self.solutions is not None:
+            for solution in self.solutions:
+                result = []
+                for item in newsolution:
+                    positions = self.get_positions_for_item(solution, item[0])
+                    if item[1] in positions:
+                        result.append(True)
+                    else:
+                        result.append(False)
+                if all(val is True for val in result):
+                    # Duplicate found. All positions match
+                    return True
         return False
 
     def get_positions_for_item(self, solution, item):
@@ -390,10 +327,8 @@ class Board(object):
                 positions.append(piece[1])
         return positions
 
-################################################################################
-# main
-################################################################################
-if __name__ == "__main__":
+def main():
+    """ Main function """
     parser = ArgumentParser()
     parser.add_argument("-x", "--horizontal", dest="width", default=3, type=int,
     help="Horizontal dimension (default=3)")
@@ -428,27 +363,33 @@ if __name__ == "__main__":
 
     board = Board(args.width, args.height)
     print 'Start', datetime.datetime.now()
-    solutions = board.set_pieces(args.kings, args.queens, args.bishops, args.rooks, args.knights)
+    board.set_pieces(args.kings, args.queens, args.bishops, args.rooks, args.knights)
     print 'End', datetime.datetime.now()
 
-    """ Test 1 """
-    # board = Board(3, 3)
-    # print 'Start', datetime.datetime.now()
-    # solutions = board.set_pieces(2, 0, 0, 1, 0)
-    # print 'End', datetime.datetime.now()
-    # if len(solutions) == 4:
-    #     print 'Test succeeded!'
+    # Test 1
+    board_test_1 = Board(3, 3)
+    print 'Start', datetime.datetime.now()
+    board_test_1.set_pieces(2, 0, 0, 1, 0)
+    print 'End', datetime.datetime.now()
+    if len(board_test_1.solutions) == 4:
+        print 'Test succeeded!'
 
-    """ Test 2 """
-    # board = Board(4, 4)
-    # print 'Start', datetime.datetime.now()
-    # solutions = board.set_pieces(0, 0, 0, 2, 4)
-    # print 'End', datetime.datetime.now()
-    # if len(solutions) == 8:
-    #     print 'Test succeeded!'
+    # Test 2
+    board_test_2 = Board(4, 4)
+    print 'Start', datetime.datetime.now()
+    board_test_2.set_pieces(0, 0, 0, 2, 4)
+    print 'End', datetime.datetime.now()
+    if len(board_test_2.solutions) == 8:
+        print 'Test succeeded!'
 
-    # """ Assignment """
+    # Assignment
     # board = Board(7, 7)
     # print 'Start', datetime.datetime.now()
     # board.set_pieces(2, 2, 2, 0, 1)
     # print 'Start', datetime.datetime.now()
+
+################################################################################
+# main
+################################################################################
+if __name__ == "__main__":
+    main()
