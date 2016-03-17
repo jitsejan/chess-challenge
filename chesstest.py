@@ -1,7 +1,28 @@
 """ chess/chesstest.py """
+################################################################################
+# Application:      Chess
+# File:             chesstest.py
+# Goal:             Defines the tests for the chess application
+# Input:
+# Output:
+# Examples:
+#
+# History:          2016-03-16 - JJ     Creation of the file
+#
+################################################################################
+# Imports
+################################################################################
 import unittest
 from chess.board import Board
 from chess.pieces import King
+
+################################################################################
+# Definitions
+################################################################################
+
+################################################################################
+# Functions
+################################################################################
 
 class ChessTests(unittest.TestCase):
     """ Tests for the Chess assignment """

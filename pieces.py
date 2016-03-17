@@ -5,7 +5,7 @@
 # Goal:             Defines the class Piece for the chess pieces
 # Input:            name, abbrevation, move, step
 # Output:           Piece with name, abbrevation, step and move in 3 directions
-# Examples:         
+# Examples:
 #
 # History:          2016-03-16 - JJ     Creation of the file
 #

@@ -1,12 +1,11 @@
 """ chess/board.py """
-
 ################################################################################
 # Application:      Chess
 # File:             board.py
 # Goal:             Defines the class Board for the chess board
 # Input:            width, height
 # Output:           board with dimensions width x height
-# Examples:         
+# Examples:
 #
 # History:          2016-03-16 - JJ     Creation of the file
 #
