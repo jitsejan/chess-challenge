@@ -36,7 +36,6 @@ class ChessTests(unittest.TestCase):
         self.board.set_pieces({'king': 2, 'rook': 1})
         self.board.put_pieces()
         # Test should pass if there are 4 solutions
-        print 'Solutions example one', len(self.board.solutions)
         self.failUnless(len(self.board.solutions) == 4)
 
     def test_example_two(self):
@@ -45,7 +44,6 @@ class ChessTests(unittest.TestCase):
         self.board.set_pieces({'rook': 2, 'knight' : 4})
         self.board.put_pieces()
         # Test should pass if there are 8 solutions
-        print 'Solutions example two', len(self.board.solutions)
         self.failUnless(len(self.board.solutions) == 8)
 
     def test_all_pieces_once(self):
@@ -60,7 +58,6 @@ class ChessTests(unittest.TestCase):
         self.board.set_pieces(pieces)
         self.board.put_pieces()
         # Test should pass if there are 16 solutions
-        print 'Solutions all pieces once', len(self.board.solutions)
         self.failUnless(len(self.board.solutions) == 16)
 
     def test_no_results(self):
