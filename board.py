@@ -87,39 +87,50 @@ class Board(object):
         """ Returns value on grid on given position """
         return self.grid[posx][posy]
 
+    def set_pieces(self, inputpieces):
+        """ Set pieces of the board """
+        if 'queen' in inputpieces:
+            for _ in range(inputpieces['queen']):
+                self._pieces.append(Queen())
+        if 'rook' in inputpieces:
+            for _ in range(inputpieces['rook']):
+                self._pieces.append(Rook())
+        if 'bishop' in inputpieces:
+            for _ in range(inputpieces['bishop']):
+                self._pieces.append(Bishop())
+        if 'king' in inputpieces:
+            for _ in range(inputpieces['king']):
+                self._pieces.append(King())
+        if 'knight' in inputpieces:
+            for _ in range(inputpieces['knight']):
+                self._pieces.append(Knight())
+
     def set_piece_on_grid(self, piece, pos):
         """ Puts the piece on the grid and allocates the space around it """
-        self.grid[pos[1]][pos[0]] = piece.abbrevation
-        for opt in piece.get_footprint(pos[0], pos[1], self.width, self.height):
-            self.grid[opt[1]][opt[0]] = 'x'
+        if 0 <= pos[1] < self.width and 0 <= pos[0] < self.height:
+            self.grid[pos[1]][pos[0]] = piece.abbrevation
+            for opt in piece.get_space(pos[0], pos[1], self.width, self.height):
+                self.grid[opt[1]][opt[0]] = 'x'
+            return True
+        else:
+            return False
 
-    def isspace(self, piece, row, col):
+    def is_space(self, piece, row, col):
         """ Calculates if the footprint of the piece fits on the grid """
-        for opt in piece.get_footprint(row, col, self.width, self.height):
+        for opt in piece.get_space(row, col, self.width, self.height):
             if self.get_value(opt[0], opt[1]) not in [' ', 'x']:
                 return False
         return True
 
-    def set_pieces(self, inputpieces):
-        """ Set pieces of the board """
-        for _ in range(inputpieces['queen']):
-            self._pieces.append(Queen())
-        for _ in range(inputpieces['rook']):
-            self._pieces.append(Rook())
-        for _ in range(inputpieces['bishop']):
-            self._pieces.append(Bishop())
-        for _ in range(inputpieces['king']):
-            self._pieces.append(King())
-        for _ in range(inputpieces['knight']):
-            self._pieces.append(Knight())
-
     def get_options(self, piece):
         """ Calculates where the piece could be placed on the grid """
         options = []
-        for row in range(self.height):
-            for col in range(self.width):
+        height = self.height
+        for row in range(height):
+            width = self.width
+            for col in range(width):
                 if self.get_value(row, col) == ' ':
-                    if self.isspace(piece, row, col):
+                    if self.is_space(piece, row, col):
                         options.append([col, row])
         return options
 
@@ -147,14 +158,14 @@ class Board(object):
             else:
                 if self.check_duplicate(self.solutions, positions) is False:
                     self._solutions.append(copy.deepcopy(positions))
+                    # self.print_solution(positions)
         return True
 
     def put_pieces(self):
-        """ Put pieces """
+        """ Put the pieces on the grid and set the solutions """
         positions = []
         for piece in self.pieces:
             positions.append([piece, None])
-
         self.get_solutions(positions)
 
     def print_solutions(self):
@@ -165,12 +176,12 @@ class Board(object):
         else:
             print 'No solutions found!'
 
-    def print_solution(self, solution):
+    def print_solution(self, solution, char=' '):
         """ Prints a single solution """
         self._grid = self._set_grid()
         for item in solution:
             self.set_piece_on_grid(item[0], item[1])
-        self._print_grid(' ')
+        self._print_grid(char)
 
     @classmethod
     def check_duplicate(cls, solutions, newsolution):

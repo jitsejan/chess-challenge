@@ -21,6 +21,7 @@
 #                   2016-03-15 - JJ     Added tests + assignment
 #                   2016-03-16 - JJ     Added recursion + pylint fixes
 #                   2016-03-16 - JJ     Split of classes pieces, board
+#                   2016-03-17 - JJ     Clean-up before delivery
 #
 ################################################################################
 # Imports
@@ -37,19 +38,24 @@ import datetime
 # Functions
 ################################################################################
 
-# def assignment():
-#     """ Assignment """
-#     board = Board(7, 7)
-    # pieces = {}
-    # pieces['king'] = 2
-    # pieces['queen'] = 2
-    # pieces['bishop'] = 2
-    # pieces['rook'] = 0
-    # pieces['knight'] = 1
-    # print 'Start', datetime.datetime.now()
-    # board.set_pieces(pieces)
-    # board.put_pieces()
-    # print 'End', datetime.datetime.now()
+def assignment():
+    """ Assignment """
+    board = Board(5, 5)
+    pieces = {}
+    pieces['king'] = 2
+    pieces['queen'] = 2
+    pieces['bishop'] = 2
+    pieces['rook'] = 0
+    pieces['knight'] = 1
+    start = datetime.datetime.now()
+    print 'Start', start
+    board.set_pieces(pieces)
+    board.put_pieces()
+    end = datetime.datetime.now()
+    print 'End', end
+    print 'Duration', end-start
+    print 'Found '+str(len(board.solutions))+ ' solutions'
+    exit()
 
 def main():
     """ Main function """
@@ -68,11 +74,13 @@ def main():
     help="Number of rooks")
     parser.add_argument("-n", "--knights", dest="knight", default=0, type=int,
     help="Number of knights")
+    parser.add_argument("-p", "--print", dest="printsolutions", default=False,
+    help="Print the solutions", action='store_true')
     args = parser.parse_args()
 
     if sum([args.king, args.queen, args.bishop, args.rook, args.knight]) == 0:
-        print 'No chess pieces given. Nothing to do. Exiting!'
-        exit(2)
+        print 'No chess pieces given. Nothing to do. Running the assignment!'
+        assignment()
     else:
         print 'Chess pieces:'
         print '- Kings ' + str(args.king)
@@ -92,11 +100,12 @@ def main():
     print 'Start', datetime.datetime.now()
     board.put_pieces()
     print 'End', datetime.datetime.now()
-    board.print_solutions()
+    print 'Found '+str(len(board.solutions))+ ' solutions'
+    if args.printsolutions is True:
+        board.print_solutions()
 
 ################################################################################
 # main
 ################################################################################
 if __name__ == "__main__":
     main()
-    # assignment()

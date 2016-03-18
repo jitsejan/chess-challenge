@@ -18,8 +18,9 @@
 ################################################################################
 
 ################################################################################
-# Functions
+# Class
 ################################################################################
+
 class Piece(object):
     """ Defines the Piece class """
     def __init__(self, name, abbrevation, move, step):
@@ -66,9 +67,10 @@ class Piece(object):
         """ Return the step of the piece """
         return self._step
 
-    def get_footprint(self, xpos, ypos, width, height):
-        """ Get the footprint for a piece """
+    def get_space(self, xpos, ypos, width, height):
+        """ Get the allocation for a piece """
         footprint = []
+        # The knight has a different footprint
         if self.name is 'Knight':
             footprint = self.get_knight_footprint(xpos, ypos, width, height)
         else:
@@ -86,11 +88,13 @@ class Piece(object):
     def get_diag_footprint(self, xpos, ypos, width, height):
         """ Return the diagonal footprint for a piece """
         footprint = []
+        # If the stepsize is infinite, put the limit to the size of the board
         if self.step is 'inf':
             if height > width:
                 self._step = height
             else:
                 self._step = width
+        # Append positions to the footprint
         for i in [j for j in range(-1*self.step, self.step+1) if j != 0]:
             xgrid = xpos+i
             ygrid = ypos+i
@@ -104,8 +108,10 @@ class Piece(object):
     def get_ver_footprint(self, xpos, ypos, height):
         """ Returns the vertical footprint for a given position """
         footprint = []
+        # If the stepsize is infinite, put the limit to the size of the board
         if self.step is 'inf':
             self._step = height
+        # Append positions to the footprint
         for i in [j for j in range(-1*self.step, self.step+1) if j != 0]:
             ygrid = ypos+i
             if 0 <= ygrid < height:
@@ -115,8 +121,10 @@ class Piece(object):
     def get_hor_footprint(self, xpos, ypos, width):
         """ Returns the horizontal footprint for a given position """
         footprint = []
+        # If the stepsize is infinite, put the limit to the size of the board
         if self.step is 'inf':
             self._step = width
+        # Append positions to the footprint
         for i in [j for j in range(-1*self.step, self.step+1) if j != 0]:
             xgrid = xpos+i
             if 0 <= xgrid < width:
@@ -131,6 +139,7 @@ class Piece(object):
                       [-2, -1], [-1, -2],
                       [1, -2], [2, -1],
                       [-1, 2], [-2, 1]]
+        # Append positions to the footprint
         for pos in kpositions:
             xgrid = xpos + pos[0]
             ygrid = ypos + pos[1]
