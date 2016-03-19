@@ -26,6 +26,16 @@ optional arguments:
 Tried to run the assignment on a 7 by 7 grid, but the current code fails at 32218 solutions. Besides that it took more than
 15 hours to calculate the 32218 solutions before it crashed. I think the program runs out of memory, because the dictionary 
 becomes to big. 
+## Update 19 Mar 2016
+Finished run of assignment on a 6 by 6 grid. After 15 hours it gave 18750 solutions
+```
+jitsejan@jitsejan:~/code/chess$ python __main__.py
+Start 2016-03-17 21:24:10.370950
+End 2016-03-18 12:20:11.744166
+Duration 14:56:01.373216
+Found 18750 solutions
+```
+
 ## Possible improvements
 * Calculate from two sides in parallel. One piece starts on top-left, one piece starts at bottom-right.
 * Do not calculate the positions for the full grid. Take the first piece and only calculate for the top-left quarter of the
